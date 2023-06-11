@@ -6,7 +6,6 @@ import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import parseaddr, formataddr
-
 """
 天气来自： http://www.tianqiapi.com/
 文字图片来源：http://wufazhuce.com/
@@ -79,15 +78,24 @@ def getWeather(city):
 
 # 获取土味情话，有时候很智障
 def getSweetWord():
-    url = 'https://chp.shadiao.app/api.php'
+    url = 'https://api.shadiao.pro/chp'
     res = requests.get(url)
-    return res.text
+
+
+    txt = res.text
+    # print("txt", txt)
+    index = txt.find('"text":"')
+    info = txt[index + 8:-3]
+    # print("info", info)
+    chineseinfo = info.encode("utf-8").decode("unicode_escape")
+    print("chineseinfo", chineseinfo)
+    return chineseinfo
 
 
 def getImgWords():
-    src = 'https://qqlykm.cn/api/fengjing'
+    # src = 'https://qqlykm.cn/api/fengjing'
     text = getSweetWord()
-    return src, text
+    return text
 
 
 # 模板消息，有能力的话，可以自己修改这个模板
@@ -119,7 +127,7 @@ def getMessage():
     wdc += '。'
     clothes_tip = tomorrow['index'][3]['desc']
 
-    img, desc = getImgWords()
+    desc = getImgWords()
     with open(template_path, encoding='utf-8') as f:
         html = f.read()
         today_w = '今天 {} {}/{} 空气指数:{} 日出日落: {}/{}'.format(today['wea'], today['tem1'], today['tem2'],
@@ -133,7 +141,7 @@ def getMessage():
                                                                    aftertomorrow['sunset'])
         html = html.replace('{{$day}}', str(days)).replace('{{today}}', today_w). \
             replace('{{tomorrow}}', tomorrow_w).replace('{{aftertomorrow}}', aftertomorrow_w). \
-            replace('{{datetime}}', today['date']).replace('{{summary}}', wdc + clothes_tip).replace('{{$img}}', img). \
+            replace('{{datetime}}', today['date']).replace('{{summary}}', wdc + clothes_tip). \
             replace('{{$desc}}', desc).replace('{{boyname}}', boyname).replace('{{girlname}}', girlname)
         return html
 
@@ -154,7 +162,8 @@ def sendQQMail():
     try:
         receivers = ["{}<{}>".format(girlname, os.environ['TO_ADDR'])]
     except KeyError:
-        receivers = ["{}<{}>".format(girlname, girlfriend['mails'])]
+        receivers = ["{}<{}>".format(girlname, gfm) for gfm in girlfriend['mails']]
+    print("receivers", receivers)
     encoding = application['mail']['default-encoding']
 
     mail_msg = getMessage()
@@ -168,6 +177,7 @@ def sendQQMail():
 
     subject = application['name']
     message['Subject'] = Header(subject, 'utf-8')
+    print("receivers", receivers)
 
     smtpObj = smtplib.SMTP_SSL(mail_host, mail_port)
     smtpObj.login(mail_user, mail_pass)
