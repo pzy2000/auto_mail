@@ -1,6 +1,6 @@
 ### github acitons 发邮件
 python 脚本 每天 7点半左右给女朋友发送邮件
-Updated
+Updated by ptd
 
 天气来自： http://www.tianqiapi.com/
 
