@@ -1,7 +1,7 @@
 ### github acitons 发邮件
 python 脚本 每天 7点半左右给女朋友发送邮件
 
-Updated by ptd
+Updated by ptd,建议先本地测试
 
 PTDNB
 
